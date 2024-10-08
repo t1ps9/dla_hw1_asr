@@ -115,6 +115,9 @@ class BaseDataset(Dataset):
             audio_tensor = torchaudio.functional.resample(audio_tensor, sr, target_sr)
         return audio_tensor
 
+    def spec_to_melspec(self, x):
+        return torch.log(x + 1e-6)
+
     def get_spectrogram(self, audio):
         """
         Special instance transform with a special key to
@@ -125,7 +128,8 @@ class BaseDataset(Dataset):
         Returns:
             spectrogram (Tensor): spectrogram for the audio.
         """
-        return self.instance_transforms["get_spectrogram"](audio)
+
+        return self.spec_to_melspec(self.instance_transforms["get_spectrogram"](audio))
 
     def preprocess_data(self, instance_data):
         """

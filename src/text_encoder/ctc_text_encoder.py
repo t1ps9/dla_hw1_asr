@@ -59,6 +59,19 @@ class CTCTextEncoder:
         return "".join([self.ind2char[int(ind)] for ind in inds]).strip()
 
     def ctc_decode(self, inds) -> str:
+        decoded = []
+        prev_ind = None
+        for ind in inds:
+            if ind == 0:
+                continue
+            if ind == prev_ind:
+                continue
+            decoded.append(self.ind2char[ind])
+            prev_ind = ind
+
+        return decoded
+
+    def ctc_beam_search(self, log_probs, beam_size=3) -> str:
         pass  # TODO
 
     @staticmethod
