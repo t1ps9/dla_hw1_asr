@@ -7,20 +7,14 @@ import editdistance
 
 def calc_cer(target_text, predicted_text) -> float:
     if len(target_text) == 0:
-        return len(predicted_text)
-
-    if len(predicted_text) == 0:
-        return len(target_text)
+        return 1
 
     return editdistance.eval(target_text, predicted_text) / len(target_text)
 
 
 def calc_wer(target_text, predicted_text) -> float:
     if len(target_text) == 0:
-        return len(predicted_text)
-
-    if len(predicted_text) == 0:
-        return len(target_text)
+        return 1
 
     if isinstance(target_text, str):
         target_text = target_text.split(' ')
