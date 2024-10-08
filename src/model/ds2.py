@@ -34,6 +34,7 @@ class DeepSpeech2(nn.Module):
         )
 
     def forward(self, spectrogram, spectrogram_length, **batch):
+        device = spectrogram.device
         spectrogram = self.convs(spectrogram.unsqueeze(1))
 
         # batch_size, ch, h, w
@@ -45,7 +46,7 @@ class DeepSpeech2(nn.Module):
 
         if self.rnn is None:
             self.rnn = nn.GRU(input_size=ch * height, hidden_size=self.rnn_hidden_size, num_layers=self.n_layers,
-                              bidirectional=True, batch_first=True)
+                              bidirectional=True, batch_first=True).to(device)
 
         spectrogram, h = self.rnn(spectrogram)
 
