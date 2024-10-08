@@ -69,7 +69,7 @@ class CTCTextEncoder:
             decoded.append(self.ind2char[ind])
             prev_ind = ind
 
-        return " ".join(decoded)
+        return "".join(decoded)
 
     def ctc_beam_search(self, log_probs, beam_size=3) -> str:
         pass  # TODO
