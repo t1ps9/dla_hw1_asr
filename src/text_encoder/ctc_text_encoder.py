@@ -2,6 +2,7 @@ import re
 from string import ascii_lowercase
 
 import torch
+from pyctcdecode import Alphabet, BeamSearchDecoderCTC
 
 # TODO add CTC decode
 # TODO add BPE, LM, Beam Search support
@@ -28,6 +29,7 @@ class CTCTextEncoder:
 
         self.ind2char = dict(enumerate(self.vocab))
         self.char2ind = {v: k for k, v in self.ind2char.items()}
+        self.beam_search_decode = BeamSearchDecoderCTC(Alphabet(self.vocab, False), None)
 
     def __len__(self):
         return len(self.vocab)
@@ -70,7 +72,8 @@ class CTCTextEncoder:
         return "".join(decoded)
 
     def ctc_beam_search(self, log_probs, beam_size=3) -> str:
-        pass  # TODO
+        log_probs = log_probs.detach().cpu().numpy()
+        return self.beam_search_decode.decode(log_probs, beam_size)
 
     @staticmethod
     def normalize_text(text: str):

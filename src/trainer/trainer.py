@@ -96,6 +96,12 @@ class Trainer(BaseTrainer):
         # Note: by improving text encoder and metrics design
         # this logging can also be improved significantly
 
+        log_probs = log_probs.detach().cpu().numpy()
+        log_probs = [log_probs[:length, :] for prob, length in zip(log_probs, log_probs_length.numpy())]
+        beam_pred = [
+            self.text_encoder.ctc_beam_search(log_prob)[0]["hypothesis"]
+            for log_prob in log_probs
+        ]
         argmax_inds = log_probs.cpu().argmax(-1).numpy()
         argmax_inds = [
             inds[: int(ind_len)]
@@ -103,20 +109,26 @@ class Trainer(BaseTrainer):
         ]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
-        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
+        tuples = list(zip(argmax_texts, beam_pred, text, argmax_texts_raw, audio_path))
 
         rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
+        for argmax_text, beam_pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
             target = self.text_encoder.normalize_text(target)
-            wer = calc_wer(target, pred) * 100
-            cer = calc_cer(target, pred) * 100
+            wer = calc_wer(target, argmax_text) * 100
+            cer = calc_cer(target, argmax_text) * 100
+
+            wer_beam_search = calc_wer(target, beam_pred) * 100
+            cer_beam_search = calc_cer(target, beam_pred) * 100
 
             rows[Path(audio_path).name] = {
                 "target": target,
                 "raw prediction": raw_pred,
-                "predictions": pred,
-                "wer": wer,
-                "cer": cer,
+                "predictions beam search": beam_pred,
+                "predictions argmax": argmax_text,
+                "wer (Argmax)": wer,
+                "cer (Argmax)": cer,
+                "wer (BS)": wer_beam_search,
+                "cer (BS)": cer_beam_search,
             }
         self.writer.add_table(
             "predictions", pd.DataFrame.from_dict(rows, orient="index")
