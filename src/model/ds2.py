@@ -12,13 +12,13 @@ class DeepSpeech2(nn.Module):
         self.convs = nn.Sequential(
             nn.Conv2d(in_channels=1, out_channels=32, kernel_size=(41, 11), stride=(2, 2), padding=(20, 5)),
             nn.BatchNorm2d(num_features=32),
-            nn.ReLU(),
+            nn.Hardtanh(0, 20, inplace=True),
             nn.Conv2d(in_channels=32, out_channels=32, kernel_size=(21, 11), stride=(2, 1), padding=(10, 5)),
             nn.BatchNorm2d(num_features=32),
-            nn.ReLU(),
+            nn.Hardtanh(0, 20, inplace=True),
             nn.Conv2d(in_channels=32, out_channels=96, kernel_size=(21, 11), stride=(2, 1), padding=(10, 5)),
             nn.BatchNorm2d(num_features=96),
-            nn.ReLU(),
+            nn.Hardtanh(0, 20, inplace=True),
         )
 
         self.rnn = None
