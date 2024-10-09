@@ -53,6 +53,7 @@ class DeepSpeech2(nn.Module):
 
     def forward(self, spectrogram, spectrogram_length, **batch):
         x = spectrogram.unsqueeze(1)
+        spectrogram_length = spectrogram_length.to(x.device)
 
         for layer in self.convs:
             x = layer(x)
