@@ -49,7 +49,7 @@ class BeamSearchCERMetric(BaseMetric):
         lengths = log_probs_length.detach().numpy()
         for log_prob_vec, length, target_text in zip(predictions, lengths, text):
             target_text = self.text_encoder.normalize_text(target_text)
-            pred_text = self.text_encoder.ctc_beam_search_decode(
+            pred_text = self.text_encoder.ctc_beam_search(
                 log_prob_vec[:length], beam_size=self.beam_size
             )
             cers.append(calc_cer(target_text=target_text, predicted_text=pred_text))
