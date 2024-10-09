@@ -72,7 +72,7 @@ class CTCTextEncoder:
         return "".join(decoded)
 
     def ctc_beam_search(self, log_probs, beam_size=3) -> str:
-        log_probs = log_probs.detach().cpu().numpy()
+        log_probs = log_probs
         return self.beam_search_decode.decode(log_probs, beam_size)
 
     @staticmethod
