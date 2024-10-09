@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 
@@ -12,56 +13,82 @@ class DeepSpeech2(nn.Module):
         self.convs = nn.Sequential(
             nn.Conv2d(in_channels=1, out_channels=32, kernel_size=(41, 11), stride=(2, 2), padding=(20, 5)),
             nn.BatchNorm2d(num_features=32),
-            nn.Hardtanh(0, 20, inplace=True),
+            nn.ReLU(),
             nn.Conv2d(in_channels=32, out_channels=32, kernel_size=(21, 11), stride=(2, 1), padding=(10, 5)),
             nn.BatchNorm2d(num_features=32),
-            nn.Hardtanh(0, 20, inplace=True),
+            nn.ReLU(),
             nn.Conv2d(in_channels=32, out_channels=96, kernel_size=(21, 11), stride=(2, 1), padding=(10, 5)),
             nn.BatchNorm2d(num_features=96),
-            nn.Hardtanh(0, 20, inplace=True),
-        )
-
-        self.rnn = None
-
-        self.row_conv_layer = nn.Conv1d(in_channels=self.rnn_hidden_size * 2,
-                                        out_channels=self.rnn_hidden_size * 2, kernel_size=3, padding=1)
-
-        self.fc_2layers = nn.Sequential(
-            nn.Linear(in_features=self.rnn_hidden_size * 2, out_features=512),
             nn.ReLU(),
-            nn.Dropout(p_drop),
-            nn.Linear(512, n_tokens)
         )
+
+        self.n_freaq = self.n_feats
+        for layer in self.convs:
+            if isinstance(layer, nn.Conv2d):
+                l_in = self.n_freaq
+                kernel_size = layer.kernel_size[0]
+                stride = layer.stride[0]
+                padding = layer.padding[0]
+                dilation = layer.dilation[0]
+                self.n_freaq = (l_in + 2 * padding - dilation * (kernel_size - 1) - 1) // stride + 1
+
+        rnn_input_size = self.n_freaq * 96
+
+        self.block_rnn = nn.ModuleList()
+        for i in range(self.n_layers):
+            input_size = rnn_input_size if i == 0 else self.rnn_hidden_size
+            rnn = nn.GRU(
+                input_size=input_size,
+                hidden_size=self.rnn_hidden_size,
+                num_layers=1,
+                batch_first=True,
+                dropout=self.p_drop if i != self.n_layers - 1 else 0,
+                bidirectional=True,
+            )
+            self.block_rnn.append(rnn)
+            if i != self.n_layers - 1:
+                self.block_rnn.append(nn.BatchNorm1d(self.rnn_hidden_size))
+
+        self.fc = nn.Linear(self.rnn_hidden_size, n_tokens)
 
     def forward(self, spectrogram, spectrogram_length, **batch):
-        device = spectrogram.device
-        spectrogram = self.convs(spectrogram.unsqueeze(1))
+        x = spectrogram.unsqueeze(1)
 
-        # batch_size, ch, h, w
-        batch_size, ch, height, w = spectrogram.shape
+        for layer in self.convs:
+            x = layer(x)
+            if isinstance(layer, nn.Conv2d):
+                module = layer
+                length = spectrogram_length
+                spectrogram_length = (
+                    length
+                    + 2 * module.padding[1]
+                    - module.dilation[1] * (module.kernel_size[1] - 1)
+                    - 1
+                ) // module.stride[1] + 1
+                b, c, f, t = x.shape
+                mask = (
+                    torch.arange(t).to(x.device).expand(b, c, f, t)
+                    >= spectrogram_length[:, None, None, None]
+                )
+                x = x.masked_fill(mask, 0)
 
-        # batch_size, w, ch, h
-        spectrogram = spectrogram.permute(0, 3, 1, 2)
-        spectrogram = spectrogram.reshape(batch_size, w, ch * height)
+        batch_size, channels, freq, time = x.size()
+        x = x.permute(0, 3, 1, 2).contiguous().view(batch_size, time, -1)
 
-        if self.rnn is None:
-            self.rnn = nn.GRU(input_size=ch * height, hidden_size=self.rnn_hidden_size, num_layers=self.n_layers,
-                              bidirectional=True, batch_first=True).to(device)
+        for layer in self.block_rnn:
+            if isinstance(layer, nn.GRU):
+                x = nn.utils.rnn.pack_padded_sequence(
+                    x, spectrogram_length.cpu(), batch_first=True, enforce_sorted=False
+                )
+                x, _ = layer(x)
+                x, _ = nn.utils.rnn.pad_packed_sequence(x, batch_first=True)
+                x = x[:, :, :self.rnn_hidden_size] + x[:, :, self.rnn_hidden_size:]
+            elif isinstance(layer, nn.BatchNorm1d):
+                x = layer(x.transpose(1, 2)).transpose(1, 2).contiguous()
 
-        spectrogram, h = self.rnn(spectrogram)
-
-        # batch_size, f_dim, time
-        spectrogram = spectrogram.permute(0, 2, 1)
-        spectrogram = self.row_conv_layer(spectrogram)
-
-        # batch_size, time, f_dim
-        spectrogram = spectrogram.permute(0, 2, 1)
-
-        spectrogram = self.fc_2layers(spectrogram)
-
-        log_probs = nn.functional.log_softmax(spectrogram, dim=-1)
+        output = self.fc(x)
 
         return {
-            "log_probs": log_probs,
-            "log_probs_length": spectrogram_length // 2
+            "log_probs": nn.functional.log_softmax(output, dim=-1),
+            "log_probs_length": spectrogram_length,
         }
