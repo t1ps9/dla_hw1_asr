@@ -60,18 +60,22 @@ class DeepSpeech2(nn.Module):
             if isinstance(layer, nn.Conv2d):
                 module = layer
                 length = spectrogram_length
+                padding = torch.tensor(module.padding[1], device=length.device)
+                dilation = torch.tensor(module.dilation[1], device=length.device)
+                kernel_size = torch.tensor(module.kernel_size[1], device=length.device)
+                stride = torch.tensor(module.stride[1], device=length.device)
                 spectrogram_length = (
                     length
-                    + 2 * module.padding[1]
-                    - module.dilation[1] * (module.kernel_size[1] - 1)
+                    + 2 * padding
+                    - dilation * (kernel_size - 1)
                     - 1
-                ) // module.stride[1] + 1
-                b, c, f, t = x.shape
-                mask = (
-                    torch.arange(t).to(x.device).expand(b, c, f, t)
-                    >= spectrogram_length[:, None, None, None]
-                )
-                x = x.masked_fill(mask, 0)
+                ) // stride + 1
+
+            b, c, f, t = x.shape
+            time_indices = torch.arange(t, device=x.device).unsqueeze(0)
+            mask = time_indices >= spectrogram_length.unsqueeze(1)
+            mask = mask.unsqueeze(1).unsqueeze(2)
+            x = x.masked_fill(mask, 0)
 
         batch_size, channels, freq, time = x.size()
         x = x.permute(0, 3, 1, 2).contiguous().view(batch_size, time, -1)
