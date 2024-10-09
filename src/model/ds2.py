@@ -59,11 +59,13 @@ class DeepSpeech2(nn.Module):
             x = layer(x)
             if isinstance(layer, nn.Conv2d):
                 module = layer
+
                 length = spectrogram_length
                 padding = torch.tensor(module.padding[1], device=length.device)
                 dilation = torch.tensor(module.dilation[1], device=length.device)
                 kernel_size = torch.tensor(module.kernel_size[1], device=length.device)
                 stride = torch.tensor(module.stride[1], device=length.device)
+
                 spectrogram_length = (
                     length
                     + 2 * padding
@@ -95,5 +97,5 @@ class DeepSpeech2(nn.Module):
 
         return {
             "log_probs": nn.functional.log_softmax(output, dim=-1),
-            "log_probs_length": spectrogram_length,
+            "log_probs_length": spectrogram_length.detach().cpu(),
         }
