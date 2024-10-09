@@ -99,7 +99,7 @@ class Trainer(BaseTrainer):
         log_probs = log_probs.detach().cpu().numpy()
         log_probs = [log_probs[:length, :] for prob, length in zip(log_probs, log_probs_length.numpy())]
         beam_pred = [
-            self.text_encoder.ctc_beam_search(log_prob)[0]["hypothesis"]
+            self.text_encoder.ctc_beam_search(log_prob)
             for log_prob in log_probs
         ]
         argmax_inds = log_probs.cpu().argmax(-1).numpy()
