@@ -1,6 +1,18 @@
+# train:
+#   _target_: src.datasets.LibrispeechDataset
+#   part: "train_all"
+#   instance_transforms: ${transforms.instance_transforms.train}
+# val:
+#   _target_: src.datasets.LibrispeechDataset
+#   part: "dev-clean"
+#   instance_transforms: ${transforms.instance_transforms.inference}
+# test:
+#   _target_: src.datasets.LibrispeechDataset
+#   part: "test-outher"
+#   instance_transforms: ${transforms.instance_transforms.inference}
 train:
   _target_: src.datasets.LibrispeechDataset
-  part: "train_all"
+  part: "train-clean-100"
   instance_transforms: ${transforms.instance_transforms.train}
 val:
   _target_: src.datasets.LibrispeechDataset
@@ -8,5 +20,5 @@ val:
   instance_transforms: ${transforms.instance_transforms.inference}
 test:
   _target_: src.datasets.LibrispeechDataset
-  part: "test-outher"
+  part: "test-clean"
   instance_transforms: ${transforms.instance_transforms.inference}
