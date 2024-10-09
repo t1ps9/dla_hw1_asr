@@ -96,12 +96,11 @@ class Trainer(BaseTrainer):
         # Note: by improving text encoder and metrics design
         # this logging can also be improved significantly
 
-        log_probs = log_probs.detach().cpu().numpy()
-        log_probs = [log_probs[:length, :] for prob, length in zip(log_probs, log_probs_length.numpy())]
         beam_pred = [
-            self.text_encoder.ctc_beam_search(log_prob)
-            for log_prob in log_probs
+            self.text_encoder.ctc_beam_search(log_prob[:len])
+            for log_prob, len in zip(log_probs, log_probs_length)
         ]
+
         argmax_inds = log_probs.cpu().argmax(-1).numpy()
         argmax_inds = [
             inds[: int(ind_len)]
