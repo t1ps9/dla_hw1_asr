@@ -79,7 +79,7 @@ class CTCTextEncoder:
 
     # implementation
 
-    def ctc_beam_search(self, probs, beam_size):
+    def ctc_beam_search(self, probs, beam_size=3):
         probs = torch.exp(probs)
         dp = {
             ("", self.EMPTY_TOK): 1.0,
@@ -109,7 +109,7 @@ class CTCTextEncoder:
                 new_dp[(new_prefix, cur_char)] += v * next_token_prob
         return new_dp
 
-    def _truncate_paths(self, dp, beam_size):
+    def _truncate_paths(self, dp, beam_size=3):
         return dict(sorted(list(dp.items()), key=lambda x: -x[1])[:beam_size])
 
     @staticmethod
