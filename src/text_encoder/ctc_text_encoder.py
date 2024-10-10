@@ -110,8 +110,7 @@ class CTCTextEncoder:
         return new_dp
 
     def _truncate_paths(self, dp, beam_size):
-        items = list(sorted(dp.items(), key=lambda x: -x[1]))[:beam_size]
-        return dict(items)
+        return dict(sorted(list(dp.items()), key=lambda x: -x[1])[:beam_size])
 
     @staticmethod
     def normalize_text(text: str):
