@@ -98,4 +98,6 @@ class DeepSpeech2(nn.Module):
         return {
             "log_probs": nn.functional.log_softmax(output, dim=-1),
             "log_probs_length": spectrogram_length.detach().cpu(),
+            "probs": nn.functional.softmax(output, dim=-1),
+            "probs_length": spectrogram_length.detach().cpu(),
         }
