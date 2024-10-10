@@ -91,7 +91,7 @@ class CTCTextEncoder:
             (prefix, proba)
             for (prefix, _), proba in sorted(dp.items(), key=lambda x: -x[1])
         ]
-        return dp
+        return dp[0][0]
 
     def _expand_and_merge_path(self, dp, next_token_probs):
         new_dp = defaultdict(float)
