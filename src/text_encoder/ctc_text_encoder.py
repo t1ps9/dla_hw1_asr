@@ -80,16 +80,15 @@ class CTCTextEncoder:
     # implementation
 
     def ctc_beam_search(self, probs, beam_size=3):
-        probs = torch.exp(probs)
         dp = {
-            ("", self.EMPTY_TOK): 1.0,
+            ("", self.EMPTY_TOK): 0.0,
         }
         for prob in probs:
             dp = self._expand_and_merge_path(dp, prob)
             dp = self._truncate_paths(dp, beam_size)
         dp = [
             (prefix, proba)
-            for (prefix, _), proba in sorted(dp.items(), key=lambda x: -x[1])
+            for (prefix, _), proba in sorted(dp.items(), key=lambda x: x[1], reverse=True)
         ]
         return dp[0][0]
 
@@ -97,7 +96,7 @@ class CTCTextEncoder:
         new_dp = defaultdict(float)
         for ind, next_token_prob in enumerate(next_token_probs):
             cur_char = self.ind2char[ind]
-            for (prefix, last_char), v in dp.items():
+            for (prefix, last_char), log_prob in dp.items():
                 if last_char == cur_char:
                     new_prefix = prefix
                     continue
@@ -106,11 +105,12 @@ class CTCTextEncoder:
                         new_prefix = prefix + cur_char
                     else:
                         new_prefix = prefix
-                new_dp[(new_prefix, cur_char)] += v * next_token_prob
+                    new_dp[(new_prefix, cur_char)] += log_prob + next_token_prob
         return new_dp
 
     def _truncate_paths(self, dp, beam_size=3):
-        return dict(sorted(list(dp.items()), key=lambda x: -x[1])[:beam_size])
+        sorted_items = sorted(dp.items(), key=lambda x: x[1], reverse=True)[:beam_size]
+        return dict(sorted_items)
 
     @staticmethod
     def normalize_text(text: str):
