@@ -4,8 +4,8 @@ train:
     _args_:
       - _target_: src.transforms.spec_augs.ApplyFrequencyMasking
         freq_mask_param: 30
-        p: 1
+        p: 0.4
       - _target_: src.transforms.spec_augs.ApplyTimeMasking
         time_mask_param: 30
-        p: 1
+        p: 0.25
 
