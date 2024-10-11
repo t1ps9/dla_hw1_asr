@@ -29,12 +29,12 @@ class AddNoiseAug(nn.Module):
 
 
 class ApplyHighPassFilter(nn.Module):
-    def __init__(self, sample_rate, min_freq, max_freq, *args, **kwargs):
+    def __init__(self, sample_rate, min_cutoff_freq, max_cutoff_freq, *args, **kwargs):
         super(ApplyHighPassFilter, self).__init__()
         self.hp_filter = HighPassFilter(
             sample_rate=sample_rate,
-            min_cutoff_freq=min_freq,
-            max_cutoff_freq=max_freq,
+            min_cutoff_freq=min_cutoff_freq,
+            max_cutoff_freq=max_cutoff_freq,
             *args, **kwargs
         )
 
@@ -44,12 +44,12 @@ class ApplyHighPassFilter(nn.Module):
 
 
 class ApplyLowPassFilter(nn.Module):
-    def __init__(self, sample_rate, min_freq, max_freq, *args, **kwargs):
+    def __init__(self, sample_rate, min_cutoff_freq, max_cutoff_freq, *args, **kwargs):
         super(ApplyLowPassFilter, self).__init__()
         self.lp_filter = LowPassFilter(
             sample_rate=sample_rate,
-            min_cutoff_freq=min_freq,
-            max_cutoff_freq=max_freq,
+            min_cutoff_freq=min_cutoff_freq,
+            max_cutoff_freq=max_cutoff_freq,
             *args, **kwargs
         )
 
