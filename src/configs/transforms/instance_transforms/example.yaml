@@ -12,15 +12,13 @@ train:
       - _target_: src.transforms.wav_augs.ApplyPitchShift
         sample_rate: 16000
       - _target_: src.transforms.wav_augs.ApplyHighPassFilter
-        p: 1
+        sample_rate: 16000
         min_cutoff_freq: 500
         max_cutoff_freq: 1000
-        sample_rate: 16000
       - _target_: src.transforms.wav_augs.ApplyLowPassFilter
-        p: 1
+        sample_rate: 16000
         min_cutoff_freq: 800
         max_cutoff_freq: 1500
-        sample_rate: 16000
 
 
 inference:
