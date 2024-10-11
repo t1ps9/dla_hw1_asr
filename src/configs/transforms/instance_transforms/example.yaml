@@ -7,7 +7,7 @@ train:
     transforms:
       - _target_: src.transforms.wav_augs.Gain
       - _target_: src.transforms.wav_augs.AddNoiseAug
-        p: 0.4
+        p: 0.18
         sample_rate: 16000
       - _target_: src.transforms.wav_augs.ApplyPitchShift
         sample_rate: 16000
