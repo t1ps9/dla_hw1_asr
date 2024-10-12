@@ -73,43 +73,42 @@ class CTCTextEncoder:
         return "".join(decoded)
 
     # library
-    def ctc_beam_search(self, log_probs, beam_size=3) -> str:
-        log_probs = log_probs.cpu().numpy()
-        return self.beam_search_decode.decode(log_probs, beam_size)
+    # def ctc_beam_search(self, log_probs, beam_size=3) -> str:
+    #     log_probs = log_probs.cpu().numpy()
+    #     return self.beam_search_decode.decode(log_probs, beam_size)
 
     # implementation
 
-    # def ctc_beam_search(self, probs, beam_size=3):
-    #     dp = {
-    #         ("", self.EMPTY_TOK): 1.0,
-    #     }
-    #     for prob in probs:
-    #         dp = self._expand_and_merge_path(dp, prob)
-    #         dp = self._truncate_paths(dp, beam_size)
-    #     dp = [
-    #         (prefix, proba)
-    #         for (prefix, _), proba in sorted(dp.items(), key=lambda x: -x[1])
-    #     ]
-    #     return dp[0][0]
+    def ctc_beam_search(self, probs, beam_size=3):
+        dp = {
+            ("", self.EMPTY_TOK): 1.0,
+        }
+        for prob in probs:
+            dp = self._expand_and_merge_path(dp, prob)
+            dp = self._truncate_paths(dp, beam_size)
+        dp = [
+            (prefix, proba)
+            for (prefix, _), proba in sorted(dp.items(), key=lambda x: -x[1])
+        ]
+        return dp[0][0]
 
-    # def _expand_and_merge_path(self, dp, next_token_probs):
-    #     new_dp = defaultdict(float)
-    #     for ind, next_token_prob in enumerate(next_token_probs):
-    #         cur_char = self.ind2char[ind]
-    #         for (prefix, last_char), v in dp.items():
-    #             if last_char == cur_char:
-    #                 new_prefix = prefix
-    #                 continue
-    #             else:
-    #                 if cur_char != self.EMPTY_TOK:
-    #                     new_prefix = prefix + cur_char
-    #                 else:
-    #                     new_prefix = prefix
-    #             new_dp[(new_prefix, cur_char)] += v * next_token_prob
-    #     return new_dp
+    def _expand_and_merge_path(self, dp, next_token_probs):
+        new_dp = defaultdict(float)
+        for ind, next_token_prob in enumerate(next_token_probs):
+            cur_char = self.ind2char[ind]
+            for (prefix, last_char), v in dp.items():
+                if last_char == cur_char:
+                    new_prefix = prefix
+                else:
+                    if cur_char != self.EMPTY_TOK:
+                        new_prefix = prefix + cur_char
+                    else:
+                        new_prefix = prefix
+                new_dp[(new_prefix, cur_char)] += v * next_token_prob
+        return new_dp
 
-    # def _truncate_paths(self, dp, beam_size=3):
-    #     return dict(sorted(list(dp.items()), key=lambda x: -x[1])[:beam_size])
+    def _truncate_paths(self, dp, beam_size=3):
+        return dict(sorted(list(dp.items()), key=lambda x: -x[1])[:beam_size])
 
     @staticmethod
     def normalize_text(text: str):
