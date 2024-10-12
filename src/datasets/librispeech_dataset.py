@@ -82,6 +82,37 @@ class LibrispeechDataset(BaseDataset):
                 json.dump(index, f, indent=2)
         return index
 
+    # def _create_index(self, part):
+    #     index = []
+    #     split_dir = self._data_dir / part
+    #     if not split_dir.exists():
+    #         self._load_part(part)
+
+    #     flac_dirs = set()
+    #     for dirpath, dirnames, filenames in os.walk(str(split_dir)):
+    #         if any([f.endswith(".flac") for f in filenames]):
+    #             flac_dirs.add(dirpath)
+    #     for flac_dir in tqdm(
+    #         list(flac_dirs), desc=f"Preparing librispeech folders: {part}"
+    #     ):
+    #         flac_dir = Path(flac_dir)
+    #         trans_path = list(flac_dir.glob("*.trans.txt"))[0]
+    #         with trans_path.open() as f:
+    #             for line in f:
+    #                 f_id = line.split()[0]
+    #                 f_text = " ".join(line.split()[1:]).strip()
+    #                 flac_path = flac_dir / f"{f_id}.flac"
+    #                 t_info = torchaudio.info(str(flac_path))
+    #                 length = t_info.num_frames / t_info.sample_rate
+    #                 index.append(
+    #                     {
+    #                         "path": str(flac_path.absolute().resolve()),
+    #                         "text": f_text.lower(),
+    #                         "audio_len": length,
+    #                     }
+    #                 )
+    #     return index
+
     def _create_index(self, part):
         index = []
         split_dir = self._data_dir / part
@@ -102,13 +133,16 @@ class LibrispeechDataset(BaseDataset):
                     f_id = line.split()[0]
                     f_text = " ".join(line.split()[1:]).strip()
                     flac_path = flac_dir / f"{f_id}.flac"
-                    t_info = torchaudio.info(str(flac_path))
-                    length = t_info.num_frames / t_info.sample_rate
-                    index.append(
-                        {
-                            "path": str(flac_path.absolute().resolve()),
-                            "text": f_text.lower(),
-                            "audio_len": length,
-                        }
-                    )
+                    try:
+                        t_info = torchaudio.info(str(flac_path))
+                        length = t_info.num_frames / t_info.sample_rate
+                        index.append(
+                            {
+                                "path": str(flac_path.absolute().resolve()),
+                                "text": f_text.lower(),
+                                "audio_len": length,
+                            }
+                        )
+                    except Exception as e:
+                        continue
         return index
