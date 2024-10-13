@@ -3,9 +3,9 @@ import os
 
 
 def download():
-    gdown.download("https://drive.google.com/file/d/1XdQqooHNgO9M35unPDLxjQwFf3MHEOEm/view?usp=drive_link")
-    gdown.download("https://drive.google.com/file/d/1OAvDuSfdgXOJ9FHsdo5CxTGZFiBL-FzN/view?usp=drive_link")
-    gdown.download("https://drive.google.com/file/d/1isFy_G-laxWCa9SYRTzDd_YtqFKfJXGr/view?usp=drive_link")
+    gdown.download("https://drive.google.com/uc?id=1XdQqooHNgO9M35unPDLxjQwFf3MHEOEm")
+    gdown.download("https://drive.google.com/uc?id=1OAvDuSfdgXOJ9FHsdo5CxTGZFiBL-FzN")
+    gdown.download("https://drive.google.com/uc?id=1isFy_G-laxWCa9SYRTzDd_YtqFKfJXGr")
 
     os.rename("model_best.pth", "data/other/model_best.pth")
     os.rename("librispeech-vocab.txt", "data/other/librispeech-vocab.txt")
