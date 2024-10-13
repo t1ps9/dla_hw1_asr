@@ -70,6 +70,20 @@ To run inference (evaluate the model or save predictions):
 python3 inference.py HYDRA_CONFIG_ARGUMENTS
 ```
 
+Запускать вот так:
+
+git clone https://github.com/t1ps9/dla_hw1_asr
+
+cd dla_hw1_asr
+pip install -r requirements.txt
+
+python download_model_weights.py
+
+python inference.py datasets.test.audio_dir=/Users/timurkin/Desktop/test_wav
+
+
+
+
 ## Credits
 
 This repository is based on a [PyTorch Project Template](https://github.com/Blinorot/pytorch_project_template).
