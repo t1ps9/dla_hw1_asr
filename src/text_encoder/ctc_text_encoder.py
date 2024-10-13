@@ -44,7 +44,7 @@ class CTCTextEncoder:
         if lm_pretrained_path:
             self.decoder = build_ctcdecoder(
                 labels=self.vocab,
-                kenlm_model_path=lm_lowercase_path,
+                kenlm_model_path=data_lm_lc_path,
                 unigrams=unigrams,
             )
         self.ind2char = dict(enumerate(self.vocab))
