@@ -25,12 +25,12 @@ class CTCTextEncoder:
         data_lm_lc_path = 'data_lm_lc_path.pruned.1e-7.arpa'
 
         if not os.path.exists(data_lm_lc_path):
-            with open('./../data_for_lm/3-gram.pruned.1e-7.arpa', 'r') as f_upper:
+            with open('src/data_for_lm/3-gram.pruned.1e-7.arpa', 'r') as f_upper:
                 content = f_upper.read().lower()
             with open(data_lm_lc_path, 'w') as f_lower:
                 f_lower.write(content)
 
-        with open('./../data_for_lm/librispeech-vocab.txt', 'r') as file:
+        with open('src/data_for_lm/librispeech-vocab.txt', 'r') as file:
             unigrams = [line.strip().lower() for line in file if line.strip()]
 
         if alphabet is None:
