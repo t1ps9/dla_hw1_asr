@@ -151,21 +151,17 @@ class Inferencer(BaseTrainer):
             )
             path = batch["audio_path"][i]
 
-        # output = {
-        #     "pred_label": pred_label,
-        #     "label": label,
-        # }
+        if self.save_path is not None:
+            save_dir = self.save_path / part
+            save_dir.mkdir(parents=True, exist_ok=True)
 
-            if self.save_path is not None:
-                save_dir = self.save_path / part
-                save_dir.mkdir(parents=True, exist_ok=True)
-                filename = os.path.basename(path)
-                filename = os.path.splitext(filename)[0]
+            filename = os.path.basename(path)
+            filename = os.path.splitext(filename)[0]
 
-                output_file = save_dir / f"{filename}.txt"
+            output_file = save_dir / f"{filename}.txt"
 
-                with open(output_file, "w", encoding="utf-8") as f:
-                    f.write(pred_text)
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(pred_text)
 
         return batch
 
