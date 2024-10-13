@@ -45,7 +45,8 @@ def main(target_dir, predictions_dir='data/saved/prediction_text/test'):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Вычисление WER и CER для предсказаний")
-    parser.add_argument("--predictions_dir", required=True, type=str, help="Папка с предсказаниями")
+    parser.add_argument("--predictions_dir", default="data/saved/prediction_text/test",
+                        required=True, type=str, help="Папка с предсказаниями")
     parser.add_argument("--target_dir", required=True, type=str, help="Папка с таргетами")
     args = parser.parse_args()
 
