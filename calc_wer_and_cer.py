@@ -13,7 +13,7 @@ from src.metrics.utils import calc_cer, calc_wer
 from src.text_encoder.ctc_text_encoder import CTCTextEncoder
 
 
-def main(predictions_dir, target_dir):
+def main(target_dir, predictions_dir='data/saved/prediction_text/test'):
     wer_total, cer_total, count = 0, 0, 0
 
     for prediction_file in Path(predictions_dir).iterdir():
