@@ -1,9 +1,9 @@
 import re
 from string import ascii_lowercase
 from collections import defaultdict
-
+import os
 import torch
-from pyctcdecode import Alphabet, BeamSearchDecoderCTC
+from pyctcdecode import Alphabet, BeamSearchDecoderCTC, build_ctcdecoder
 
 # TODO add CTC decode
 # TODO add BPE, LM, Beam Search support
@@ -15,12 +15,25 @@ from pyctcdecode import Alphabet, BeamSearchDecoderCTC
 class CTCTextEncoder:
     EMPTY_TOK = ""
 
-    def __init__(self, alphabet=None, **kwargs):
+    def __init__(self, alphabet=None, vocab_path=None,
+                 lm_pretrained_path=None, **kwargs):
         """
         Args:
             alphabet (list): alphabet for language. If None, it will be
                 set to ascii
         """
+
+        data_lm_lc_path = 'data_lm_lc_path.pruned.1e-7.arpa'
+
+        if not os.path.exists(data_lm_lc_path):
+            with open(lm_pretrained_path, 'r') as f_upper:
+                content = f_upper.read().lower()
+            with open(data_lm_lc_path, 'w') as f_lower:
+                f_lower.write(content)
+
+        if vocab_path:
+            with open(vocab_path, 'r') as file:
+                unigrams = [line.strip().lower() for line in file if line.strip()]
 
         if alphabet is None:
             alphabet = list(ascii_lowercase + " ")
@@ -28,6 +41,12 @@ class CTCTextEncoder:
         self.alphabet = alphabet
         self.vocab = [self.EMPTY_TOK] + list(self.alphabet)
 
+        if lm_pretrained_path:
+            self.decoder = build_ctcdecoder(
+                labels=self.vocab,
+                kenlm_model_path=lm_lowercase_path,
+                unigrams=unigrams,
+            )
         self.ind2char = dict(enumerate(self.vocab))
         self.char2ind = {v: k for k, v in self.ind2char.items()}
         self.beam_search_decode = BeamSearchDecoderCTC(Alphabet(self.vocab, False), None)
@@ -75,7 +94,7 @@ class CTCTextEncoder:
     # library
     def ctc_beam_search(self, log_probs, beam_size=3) -> str:
         log_probs = log_probs.cpu().numpy()
-        return self.beam_search_decode.decode(log_probs, beam_size)
+        return self.decoder.decode(log_probs, beam_size)
 
     # implementation
 

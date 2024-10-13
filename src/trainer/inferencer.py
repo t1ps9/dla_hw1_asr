@@ -1,5 +1,6 @@
 import torch
 from tqdm.auto import tqdm
+import json
 
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
@@ -136,26 +137,37 @@ class Inferencer(BaseTrainer):
         # Some saving logic. This is an example
         # Use if you need to save predictions on disk
 
-        batch_size = batch["logits"].shape[0]
+        batch_size = batch["log_probs"].shape[0]
         current_id = batch_idx * batch_size
 
+        answer = []
         for i in range(batch_size):
             # clone because of
             # https://github.com/pytorch/pytorch/issues/1995
-            logits = batch["logits"][i].clone()
-            label = batch["labels"][i].clone()
-            pred_label = logits.argmax(dim=-1)
+            length = batch["log_probs_length"][i].clone()
+            log_probs = batch["log_probs"][i].clone()
+            pred_text = self.text_encoder.ctc_beam_search(
+                log_probs[:length]
+            )
+            path = batch["audio_path"][i]
+            answer.append(f"{path}\t{pred_text}")
 
-            output_id = current_id + i
+        # output = {
+        #     "pred_label": pred_label,
+        #     "label": label,
+        # }
 
-            output = {
-                "pred_label": pred_label,
-                "label": label,
-            }
+        if self.save_path is not None:
+            # you can use safetensors or other lib here
+            save_dir = self.save_path / part
+            save_dir.mkdir(parents=True, exist_ok=True)
+            output = save_dir / "predictions.txt"
 
-            if self.save_path is not None:
-                # you can use safetensors or other lib here
-                torch.save(output, self.save_path / part / f"output_{output_id}.pth")
+            with open(output, "a", encoding="utf-8") as f:
+                for line in answer:
+                    f.write(line + "\n")
+
+            print(f"Предсказания сохранены в {output}")
 
         return batch
 
