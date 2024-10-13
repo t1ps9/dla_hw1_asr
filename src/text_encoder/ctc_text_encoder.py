@@ -15,8 +15,7 @@ from pyctcdecode import Alphabet, BeamSearchDecoderCTC, build_ctcdecoder
 class CTCTextEncoder:
     EMPTY_TOK = ""
 
-    def __init__(self, alphabet=None, vocab_path=None,
-                 lm_pretrained_path=None, **kwargs):
+    def __init__(self, alphabet=None, **kwargs):
         """
         Args:
             alphabet (list): alphabet for language. If None, it will be
@@ -26,14 +25,13 @@ class CTCTextEncoder:
         data_lm_lc_path = 'data_lm_lc_path.pruned.1e-7.arpa'
 
         if not os.path.exists(data_lm_lc_path):
-            with open(lm_pretrained_path, 'r') as f_upper:
+            with open('./../data_for_lm/3-gram.pruned.1e-7.arpa', 'r') as f_upper:
                 content = f_upper.read().lower()
             with open(data_lm_lc_path, 'w') as f_lower:
                 f_lower.write(content)
 
-        if vocab_path:
-            with open(vocab_path, 'r') as file:
-                unigrams = [line.strip().lower() for line in file if line.strip()]
+        with open('./../data_for_lm/librispeech-vocab.txt', 'r') as file:
+            unigrams = [line.strip().lower() for line in file if line.strip()]
 
         if alphabet is None:
             alphabet = list(ascii_lowercase + " ")
@@ -41,12 +39,11 @@ class CTCTextEncoder:
         self.alphabet = alphabet
         self.vocab = [self.EMPTY_TOK] + list(self.alphabet)
 
-        if lm_pretrained_path:
-            self.decoder = build_ctcdecoder(
-                labels=self.vocab,
-                kenlm_model_path=data_lm_lc_path,
-                unigrams=unigrams,
-            )
+        self.decoder = build_ctcdecoder(
+            labels=self.vocab,
+            kenlm_model_path=data_lm_lc_path,
+            unigrams=unigrams,
+        )
         self.ind2char = dict(enumerate(self.vocab))
         self.char2ind = {v: k for k, v in self.ind2char.items()}
         self.beam_search_decode = BeamSearchDecoderCTC(Alphabet(self.vocab, False), None)
