@@ -98,7 +98,7 @@ class CTCTextEncoder:
 
     # implementation
 
-    def ctc_beam_search(self, probs, beam_size=10):
+    def ctc_beam_search(self, probs, beam_size=5):
         probs = torch.exp(probs)
         dp = {
             ("", self.EMPTY_TOK): 1.0,
