@@ -112,7 +112,7 @@ class CTCTextEncoder:
         ]
         return dp[0][0]
 
-    def _expand_a1nd_merge_path(self, dp, next_token_probs):
+    def _expand_and_merge_path(self, dp, next_token_probs):
         new_dp = defaultdict(float)
         for ind, next_token_prob in enumerate(next_token_probs):
             cur_char = self.ind2char[ind]
