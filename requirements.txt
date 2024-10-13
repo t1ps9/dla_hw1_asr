@@ -11,10 +11,10 @@ matplotlib
 pandas
 wandb
 comet_ml
-hydra-core
-wget
 kenlm
-
+gdown
+wget
+hydra-core
 black
 isort
 pre-commit
