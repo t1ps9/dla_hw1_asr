@@ -20,8 +20,8 @@ loss_function:
   _target_: src.loss.CTCLossWrapper
 text_encoder:
   _target_: src.text_encoder.CTCTextEncoder
-  vocab_path: src/data_for_lm/librispeech-vocab.txt
-  lm_pretrained_path: src/data_for_lm/3-gram.pruned.1e-7.arpa
+  vocab_path: ../data_for_lm/librispeech-vocab.txt
+  lm_pretrained_path: ../data_for_lm/3-gram.pruned.1e-7.arpa
 trainer:
   log_step: 50
   n_epochs: 100
