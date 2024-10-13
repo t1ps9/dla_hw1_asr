@@ -18,3 +18,4 @@ hydra-core
 black
 isort
 pre-commit
+datasets

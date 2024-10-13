@@ -1,6 +1,7 @@
 import torch
 from tqdm.auto import tqdm
 import json
+import os
 
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
@@ -140,7 +141,6 @@ class Inferencer(BaseTrainer):
         batch_size = batch["log_probs"].shape[0]
         current_id = batch_idx * batch_size
 
-        answer = []
         for i in range(batch_size):
             # clone because of
             # https://github.com/pytorch/pytorch/issues/1995
@@ -150,24 +150,22 @@ class Inferencer(BaseTrainer):
                 log_probs[:length]
             )
             path = batch["audio_path"][i]
-            answer.append(f"{path}\t{pred_text}")
 
         # output = {
         #     "pred_label": pred_label,
         #     "label": label,
         # }
 
-        if self.save_path is not None:
-            # you can use safetensors or other lib here
-            save_dir = self.save_path / part
-            save_dir.mkdir(parents=True, exist_ok=True)
-            output = save_dir / "predictions.txt"
+            if self.save_path is not None:
+                save_dir = self.save_path / part
+                save_dir.mkdir(parents=True, exist_ok=True)
+                filename = os.path.basename(path)
+                filename = os.path.splitext(filename)[0]
 
-            with open(output, "a", encoding="utf-8") as f:
-                for line in answer:
-                    f.write(line + "\n")
+                output_file = save_dir / f"{filename}.txt"
 
-            print(f"Предсказания сохранены в {output}")
+                with open(output_file, "w", encoding="utf-8") as f:
+                    f.write(pred_text)
 
         return batch
 
