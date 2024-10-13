@@ -13,6 +13,6 @@ inferencer:
   from_pretrained: "/Users/timurkin/Desktop/prk_test_clean_all/checkpoint-epoch65.pth" # path to the pretrained model
 text_encoder:
   _target_: src.text_encoder.CTCTextEncoder
-  # vocab_path: ./../data_for_lm/librispeech-vocab.txt
-  # lm_pretrained_path: ./../data_for_lm/3-gram.pruned.1e-7.arpa
+  vocab_path: ./../data_for_lm/librispeech-vocab.txt
+  lm_pretrained_path: ./../data_for_lm/3-gram.pruned.1e-7.arpa
 
