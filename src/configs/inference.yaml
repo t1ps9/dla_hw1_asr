@@ -1,7 +1,8 @@
 defaults:
   - model: ds2
   - metrics: example
-  - datasets: inference_custom_datasets # we do not want to run inference on training data
+  # - datasets: inference_custom_datasets # we do not want to run inference on training data
+  - datasets: inference
   - dataloader: inf
   - transforms: example_only_instance
   - _self_
